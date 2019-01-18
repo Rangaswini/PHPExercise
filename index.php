@@ -1,115 +1,116 @@
-<!DOCTYPE HTML>  
+<!DOCTYPE html>
 <html>
-<head>
-<style>
-.error {color: #FF0000;}
-</style>
-</head>
-<body>  
+<body>
 
 <?php
-// define variables and set to empty values
-$nameErr = $emailErr = $genderErr = $websiteErr = "";
-$name = $email = $gender = $comment = $website = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  if (empty($_POST["name"])) {
-    $nameErr = "Name is required";
-  } 
-  elseif($_POST["name"]) {
-   $name = test_input($_POST["name"]);
-   // check if name only contains letters and whitespace
-   if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
-     $nameErr = "Only letters and white space allowed"; 
-   }
-}
-  else {
-    $name = test_input($_POST["name"]);
+//Multi-D array
+$cars = array
+  (
+  array("Volvo",22,18),
+  array("BMW",15,13),
+  array("Saab",5,2),
+  array("Land Rover",17,15)
+  );
+  
+echo $cars[0][2];
+for ($row = 0; $row < 4; $row++) {
+  echo "<p><b>Row number $row</b></p>";
+  for ($col = 0; $col < 3; $col++) {
+    echo "  ".$cars[$row][$col];
   }
   
-  if (empty($_POST["email"])) {
-    $emailErr = "Email is required";
-  } 
-  elseif($_POST["email"])
-  {
-      $email = test_input($_POST["email"]);
-      if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $emailErr = "Invalid email format"; }
+}
+//Date & time
+echo "Today is " . date("Y/m/d/l") . "<br>";//l-for-day(friday)
+
+echo "The time is " . date("h:i:sa");
+
+date_default_timezone_set("America/New_York");
+
+$d=mktime(11, 14, 54, 8, 12, 2014);
+echo "Created date is " . date("Y-m-d h:i:sa", $d);
+
+$d=strtotime("10:30pm 15 June 2019");
+echo "Created date is " . date("Y-m-d h:i:sa", $d);
+
+$d=strtotime("tomorrow");
+echo date("Y-m-d h:i:sa", $d) . "<br>";
+
+$d=strtotime("next Sunday");
+echo date("Y-m-d h:i:sa", $d) . "<br>";
+
+$d=strtotime("+2 Months");
+echo date("Y-m-d h:i:sa", $d) . "<br>";
+
+$d1=strtotime("20 jan");
+$d2=ceil(($d1-time())/60/60/24);
+echo "There are " . $d2 ." days until 20 jan.";
+
+//include & require
+
+include 'sample.php';
+//require 'sample1.php';
+//echo "Testing require";
+
+//File handling
+
+
+
+$myfile = fopen("info.txt", "a+") or die("Unable to open file!");
+$txt = "new line added";
+//fwrite($myfile, $txt);
+while(!feof($myfile)) {
+  echo fgets($myfile) . "<br>";
+}
+fclose($myfile);
+
+//fileUpload
+
+
+$target_dir = "uploads/";
+$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+$uploadOk = 1;
+$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+// Check if image file is a actual image or fake image
+if(isset($_POST["submit"])) {
+    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
+    if($check !== false) {
+        echo "File is an image - " . $check["mime"] . ".";
+        $uploadOk = 1;
+    } else {
+        echo "File is not an image.";
+        $uploadOk = 0;
+    }
+}
+// Check if file already exists
+if (file_exists($target_file)) {
+    echo "Sorry, file already exists.";
+    $uploadOk = 0;
+}
+// Check file size
+if ($_FILES["fileToUpload"]["size"] > 500000) {
+    echo "Sorry, your file is too large.";
+    $uploadOk = 0;
+}
+// Allow certain file formats
+if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+&& $imageFileType != "gif" ) {
+    echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+    $uploadOk = 0;
+}
+// Check if $uploadOk is set to 0 by an error
+if ($uploadOk == 0) {
+    echo "Sorry, your file was not uploaded.";
+// if everything is ok, try to upload file
+} else {
+    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+    }
 }
 
-else {
-    $email = test_input($_POST["email"]);
-  }
-    
-  if (empty($_POST["website"])) {
-    $website = "";
-  } 
-  elseif($_POST["website"])
-{
-$website = test_input($_POST["website"]);
-if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$website)) {
-  $websiteErr = "Invalid URL"; 
-}
-}
-else {
-    $website = test_input($_POST["website"]);
-  }
 
-  if (empty($_POST["comment"])) {
-    $comment = "";
-  } else {
-    $comment = test_input($_POST["comment"]);
-  }
-
-  if (empty($_POST["gender"])) {
-    $genderErr = "Gender is required";
-  } else {
-    $gender = test_input($_POST["gender"]);
-  }
-}
-
-function test_input($data) {
-  $data = trim($data);
-  $data = stripslashes($data);
-  $data = htmlspecialchars($data);
-  return $data;
-}
-?>
-
-<h2>PHP Form Validation Example</h2>
-<p><span class="error">* required field</span></p>
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">  
-  Name: <input type="text" name="name">
-  <span class="error">* <?php echo $nameErr;?></span>
-  <br><br>
-  E-mail: <input type="text" name="email">
-  <span class="error">* <?php echo $emailErr;?></span>
-  <br><br>
-  Website: <input type="text" name="website">
-  <span class="error"><?php echo $websiteErr;?></span>
-  <br><br>
-  Comment: <textarea name="comment" rows="5" cols="40"></textarea>
-  <br><br>
-  Gender:
-  <input type="radio" name="gender" value="female">Female
-  <input type="radio" name="gender" value="male">Male
-  <input type="radio" name="gender" value="other">Other
-  <span class="error">* <?php echo $genderErr;?></span>
-  <br><br>
-  <input type="submit" name="submit" value="Submit">  
-</form>
-
-<?php
-echo "<h2>Your Input:</h2>";
-echo $name;
-echo "<br>";
-echo $email;
-echo "<br>";
-echo $website;
-echo "<br>";
-echo $comment;
-echo "<br>";
-echo $gender;
 ?>
 
 </body>
